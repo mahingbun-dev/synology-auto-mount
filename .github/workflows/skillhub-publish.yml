@@ -1,0 +1,117 @@
+name: SkillHub 发布
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一时刻只允许一个发布任务，避免并发重复发布
+concurrency:
+  group: skillhub-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      SKILLHUB_TOKEN: ${{ secrets.SKILLHUB_TOKEN }}
+      # CI 内禁止 CLI 自检升级/装工作区技能，避免交互卡住
+      SKILLHUB_SKIP_SELF_UPGRADE: '1'
+      SKILLHUB_SKIP_WORKSPACE_SKILLS: '1'
+      SKILL_DIR: .
+      # 打包时排除的仓库元文件（相对 SKILL_DIR；.git/.github 始终排除）
+      STAGE_EXCLUDES: 'README.md README.zh-CN.md docs'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 解析 slug/version 并判断该版本是否已发布
+        id: meta
+        run: |
+          SLUG="$(grep -m1 '^slug:' "$SKILL_DIR/SKILL.md" | sed 's/^slug:[[:space:]]*//' | tr -d '"')"
+          VERSION="$(grep -m1 '^version:' "$SKILL_DIR/SKILL.md" | sed 's/^version:[[:space:]]*//' | tr -d '"')"
+          if [ -z "$SLUG" ] || [ -z "$VERSION" ]; then
+            echo "::error title=元数据缺失::SKILL.md 缺少 slug 或 version 字段（SkillHub 必填）"
+            exit 1
+          fi
+          TAG="skillhub/${SLUG}/v${VERSION}"
+          {
+            echo "slug=$SLUG"
+            echo "version=$VERSION"
+            echo "tag=$TAG"
+          } >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice title=已发布过::$SLUG v$VERSION 已存在（tag $TAG），本次跳过"
+          else
+            echo "发布目标: $SLUG v$VERSION"
+          fi
+
+      - name: 检查 SKILLHUB_TOKEN 是否已配置
+        id: token
+        run: |
+          if [ -z "${SKILLHUB_TOKEN}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=未接入发布::Secret SKILLHUB_TOKEN 未配置，本次跳过发布。到 skillhub.cn/dashboard/keys 创建 Token 后，在本仓库 Settings → Secrets and variables → Actions 添加 SKILLHUB_TOKEN 即可启用。"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 安装 SkillHub CLI
+        if: steps.meta.outputs.published != 'true' && steps.token.outputs.configured == 'true'
+        run: |
+          curl -fsSL https://skillhub.cn/install/install.sh | bash -s -- --cli-only
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: 打包干净的 skill 目录
+        if: steps.meta.outputs.published != 'true' && steps.token.outputs.configured == 'true'
+        run: |
+          STAGE="$RUNNER_TEMP/skill-stage"
+          mkdir -p "$STAGE"
+          args=(--exclude .git --exclude .github)
+          for e in $STAGE_EXCLUDES; do args+=(--exclude "$e"); done
+          rsync -a "${args[@]}" "$SKILL_DIR/" "$STAGE/"
+          echo "将上传以下文件："
+          find "$STAGE" -type f | sort
+
+      - name: 发布到 SkillHub
+        id: publish
+        env:
+          CHANGELOG: ${{ github.event.head_commit.message }}
+        run: |
+          set -o pipefail
+          skillhub publish "$RUNNER_TEMP/skill-stage" \
+            --changelog "${CHANGELOG:-手动触发（workflow_dispatch）}" \
+            --json | tee "$RUNNER_TEMP/publish-result.json"
+
+      - name: 写出发布摘要
+        if: steps.publish.outcome == 'success'
+        env:
+          SLUG: ${{ steps.meta.outputs.slug }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          STATUS="$(jq -r '.status // "unknown"' "$RUNNER_TEMP/publish-result.json")"
+          URL="$(jq -r '.publicUrl // empty' "$RUNNER_TEMP/publish-result.json")"
+          {
+            echo "### SkillHub 发布结果"
+            echo ""
+            echo "| 项目 | 值 |"
+            echo "| --- | --- |"
+            echo "| Skill | ${SLUG} v${VERSION} |"
+            echo "| 状态 | ${STATUS} |"
+            if [ -n "$URL" ]; then echo "| 链接 | ${URL} |"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 打发布 tag（版本门控标记，防止同版本重复发布）
+        if: steps.publish.outcome == 'success'
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "SkillHub 发布: ${{ steps.meta.outputs.slug }} v${{ steps.meta.outputs.version }}"
+          git push origin "$TAG"

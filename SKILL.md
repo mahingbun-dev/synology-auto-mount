@@ -1,5 +1,8 @@
 ---
 name: synology-auto-mount
+slug: synology-auto-mount
+displayName: Synology Auto Mount
+version: 1.0.0
 description: 把群晖/Synology（或任意 SMB）NAS 共享在 macOS 上挂载成本地盘：开机自动挂载、断线/睡眠唤醒后 60 秒内自动重连、零 sudo、密码只存钥匙串不落盘。Use when the user wants to mount a NAS/SMB shared folder on macOS with auto-remount after reboot/sleep, 群晖挂载、NAS 自动重连、网络硬盘像本地盘、smb automount、keep smb share mounted.
 ---
 

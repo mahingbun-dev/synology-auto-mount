@@ -96,4 +96,4 @@ tail -n 20 ~/Library/Logs/synology-automount.log  # 守护做了什么
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE.md)

@@ -96,4 +96,4 @@ Removes the LaunchAgent and watchdog script; optionally unmounts the volume and 
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE.md)

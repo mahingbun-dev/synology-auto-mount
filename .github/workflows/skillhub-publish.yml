@@ -80,6 +80,7 @@ jobs:
 
       - name: 发布到 SkillHub
         id: publish
+        if: steps.meta.outputs.published != 'true' && steps.token.outputs.configured == 'true'
         env:
           CHANGELOG: ${{ github.event.head_commit.message }}
         run: |

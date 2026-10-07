@@ -23,7 +23,8 @@ jobs:
       SKILLHUB_SKIP_WORKSPACE_SKILLS: '1'
       SKILL_DIR: .
       # 打包时排除的仓库元文件（相对 SKILL_DIR；.git/.github 始终排除）
-      STAGE_EXCLUDES: 'README.md README.zh-CN.md docs'
+      # .gitignore / LICENSE（无扩展名）已被 SkillHub 上传接口列为不允许的文件类型，不要进 stage
+      STAGE_EXCLUDES: 'README.md README.zh-CN.md docs .gitignore LICENSE.md'
     steps:
       - uses: actions/checkout@v4
         with:

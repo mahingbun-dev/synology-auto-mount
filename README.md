@@ -1,5 +1,7 @@
 # synology-auto-mount
 
+English | [简体中文](README.zh-CN.md)
+
 ![Platform](https://img.shields.io/badge/platform-macOS-black) ![License](https://img.shields.io/badge/license-MIT-green) ![Shell](https://img.shields.io/badge/shell-bash%20%2F%20sh-4EAA25)
 
 **Keep a Synology (or any) SMB share mounted on macOS — through reboots, sleep/wake and network drops.**
@@ -89,9 +91,8 @@ Removes the LaunchAgent and watchdog script; optionally unmounts the volume and 
 
 ## Requirements
 
-- macOS 13+ (developed and tested on macOS 26/27)
-- A Synology NAS (or any SMB server) with the SMB service enabled
-- Tested against DSM 7.x
+- macOS — no third-party dependencies (developed and tested on macOS 26/27)
+- A Synology NAS (or any SMB server) with the SMB service enabled — tested against DSM 7.4
 
 ## License
 

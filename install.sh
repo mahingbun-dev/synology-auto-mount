@@ -36,8 +36,8 @@ if [[ $# -ge 4 ]]; then
 else
     echo "Synology Auto Mount — keep an SMB share mounted on macOS."
     echo
-    read -rp "NAS host or IP (e.g. 192.168.31.165): " NAS_HOST
-    read -rp "Shared folder name (e.g. MacHardDrive): " NAS_SHARE
+    read -rp "NAS host or IP (e.g. 192.0.2.1): " NAS_HOST
+    read -rp "Shared folder name (e.g. MyShare): " NAS_SHARE
     read -rp "NAS username: " NAS_USER
     read -rsp "NAS password (input hidden): " NAS_PASS; echo
 fi

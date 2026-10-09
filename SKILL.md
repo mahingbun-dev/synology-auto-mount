@@ -37,7 +37,7 @@ description: 把群晖/Synology（或任意 SMB）NAS 共享在 macOS 上挂载�
    ./install.sh
 
    # 非交互（agent 可直接代跑，四个参数：主机 共享名 用户名 密码）
-   ./install.sh 192.168.31.165 MacHardDrive Mr.Ma '密码'
+   ./install.sh 192.0.2.1 MyShare nasuser '密码'
    ```
 
 2. 安装器会依次：SMB 端口预检 → 带凭据挂载一次（让系统把密码存进钥匙串）→ 卸载 →
@@ -46,7 +46,7 @@ description: 把群晖/Synology（或任意 SMB）NAS 共享在 macOS 上挂载�
 3. 验证：
 
    ```sh
-   mount | grep MacHardDrive        # 应看到 (smbfs, ...)
+   mount | grep MyShare             # 应看到 (smbfs, ...)
    tail -f ~/Library/Logs/synology-automount.log
    diskutil unmount /Volumes/<共享名>   # 60 秒内应自动重挂
    ```

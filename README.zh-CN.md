@@ -32,7 +32,7 @@ cd synology-auto-mount
 示例：
 
 ```sh
-./install.sh 192.168.31.165 MacHardDrive Mr.Ma 'password123'
+./install.sh 192.0.2.1 MyShare nasuser '你的密码'
 ```
 
 `SHARE` 是 DSM 控制面板 → 共享文件夹里配置的名称（不是 `/volume2/...` 路径）。要挂共享下的子目录，写成 `SHARE/子目录`。

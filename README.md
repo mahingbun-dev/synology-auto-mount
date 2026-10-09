@@ -2,7 +2,7 @@
 
 English | [简体中文](README.zh-CN.md)
 
-![Platform](https://img.shields.io/badge/platform-macOS-black) ![License](https://img.shields.io/badge/license-MIT-green) ![Shell](https://img.shields.io/badge/shell-bash%20%2F%20sh-4EAA25)
+[![Platform](https://img.shields.io/badge/platform-macOS-black)](#requirements) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.md) [![Shell](https://img.shields.io/badge/shell-bash%20%2F%20sh-4EAA25)](install.sh)
 
 **Keep a Synology (or any) SMB share mounted on macOS — through reboots, sleep/wake and network drops.**
 
@@ -34,7 +34,7 @@ cd synology-auto-mount
 Example:
 
 ```sh
-./install.sh 192.168.31.165 MacHardDrive Mr.Ma 'password123'
+./install.sh 192.0.2.1 MyShare nasuser 'YOUR_PASSWORD'
 ```
 
 `SHARE` is the shared-folder name as configured in DSM (Control Panel → Shared Folders) — not a `/volume2/...` path. A subfolder of a share can be targeted as `SHARE/subfolder`.
